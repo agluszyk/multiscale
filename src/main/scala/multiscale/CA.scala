@@ -8,9 +8,9 @@ import scalafx.application.Platform
 
 object CA {
   val rand = new Random()
-  val imgHeight = 600
-  val imgWidth = 800
-  var cellSize = 2
+  val imgHeight = 768
+  val imgWidth = 1024
+  var cellSize = 4
   var cellsHorizontal = imgWidth / cellSize
   var cellsVertical = imgHeight / cellSize
   var periodic = true
@@ -35,15 +35,38 @@ object CA {
     } {
       caArray(i)(j) = Color.WHITE
       srxArray(i)(j) = Color.WHITE
+      MonteCarlo.H(i)(j) = 4
+      MonteCarlo.cellsOnBoundaries.clear()
     }
     gc.fill = Color.WHITE
     gc.fillRect(0, 0, imgWidth, imgHeight)
     inclusions = Set(Color.BLACK)
+    MonteCarlo.currentRecStep = 0
+
   }
   def addCell(x: Int, y: Int, col: Color) = {
     caArray(x)(y) = col
     gc.fill = col
     gc.fillRect(x * cellSize, y * cellSize, cellSize, cellSize)
+  }
+
+  def addArrayCell(x: Int, y: Int, col: Color) = {
+    caArray(x)(y) = col
+  }
+
+  def srxAddArrayCell(x: Int, y: Int, col: Color) = {
+    srxArray(x)(y) = col
+    caArray(x)(y) = col
+  }
+
+  def refreshCA = {
+    (0 until CA.cellsHorizontal).foreach {
+      i =>
+        (0 until CA.cellsVertical).foreach {
+          j =>
+            gc.fill = caArray(i)(j)
+            gc.fillRect(i * cellSize, j * cellSize, cellSize, cellSize)        }
+    }
   }
 
   def srxAddCell(x: Int, y: Int, col: Color) = {
