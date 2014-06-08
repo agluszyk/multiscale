@@ -16,7 +16,7 @@ import scala.util.Random
 
 object Window extends JFXApp {
 
-  val controls:  VBox {val reset: Button; val randomizeCA: Button; val nextItMC: Button; val showEnergy: Button; val nucleation: Button; val recrystalization: Button; val energyToggle: ToggleGroup; val energyToggleOn: RadioButton; val energyToggleOff: RadioButton; val monteCarloStep: TextField; val monteCarloJgb: TextField; val monteCarloOmega: TextField; val monteCarloRecStep: TextField; val monteCarloRecJgb: TextField; val energyDistributionType: ChoiceBox[String]; val nucleationType: ChoiceBox[String]; val nucleationRate: ChoiceBox[String]; val nucleationFactor: TextField; val nucleationStart: TextField; val nucleationStep: TextField} = new VBox {
+  val controls:  VBox {val reset: Button; val randomizeCA: Button; val nextItMC: Button; val showEnergy: Button; val recrystalization: Button; val energyToggle: ToggleGroup; val energyToggleOn: RadioButton; val energyToggleOff: RadioButton; val monteCarloStep: TextField; val monteCarloJgb: TextField; val monteCarloOmega: TextField; val monteCarloRecStep: TextField; val monteCarloRecJgb: TextField; val energyDistributionType: ChoiceBox[String]; val nucleationType: ChoiceBox[String]; val nucleationRate: ChoiceBox[String]; val nucleationFactor: TextField; val nucleationStart: TextField; val nucleationStep: TextField} = new VBox {
     spacing = 10
     padding = Insets(10, 0, 0, 0)
     prefWidth = 160
@@ -49,18 +49,10 @@ object Window extends JFXApp {
       }
     }
 
-    val nucleation = new Button("Nucleation") {
-      prefWidth = 150
-      onAction = { e: ActionEvent =>
-        MonteCarlo.constantNucleation
-        CA.refreshCA
-      }
-    }
-
     val recrystalization = new Button("Recrystallization") {
       prefWidth = 150
       onAction = { e: ActionEvent =>
-        MonteCarlo.runRecrystalization
+        MonteCarlo.runSRX
       }
     }
 
@@ -148,7 +140,7 @@ object Window extends JFXApp {
       selectionModel().selectedItem.onChange({
         selectionModel().selectedItem.value match {
           case "Homogeneous" => MonteCarlo.H = Array.fill(CA.cellsHorizontal,CA.cellsVertical)(4)
-          case "Heterogeneous" => MonteCarlo.H = Array.fill(CA.cellsHorizontal, CA.cellsVertical)(new Random().nextInt(5))
+          case "Heterogeneous" => MonteCarlo.heterogenousEnergyDist
         }
 
 
@@ -176,6 +168,18 @@ object Window extends JFXApp {
       }
       focused.onChange((_, _, newValue) => {
         MonteCarlo.nucleationFactor = this.text.value.toInt
+      })
+    }
+
+    val nucleationPercentOnBoundaries = new TextField {
+      prefWidth = 150
+      maxWidth = 150
+      text = "90"
+      onAction = { e: ActionEvent =>
+        MonteCarlo.nucleationPercentOnBoundaries = this.text.value.toInt
+      }
+      focused.onChange((_, _, newValue) => {
+        MonteCarlo.nucleationPercentOnBoundaries = this.text.value.toInt
       })
     }
 
@@ -221,6 +225,8 @@ object Window extends JFXApp {
       energyToggleOff,
       new Label("Nucleation type"),
       nucleationType,
+      new Label("% placed on boundaries"),
+      nucleationPercentOnBoundaries,
       new Label("Nucleation rate"),
       nucleationRate,
       new Label("Base nucleons #"),
@@ -229,7 +235,6 @@ object Window extends JFXApp {
       nucleationFactor,
       new Label("Steps between nucleation"),
       nucleationStep,
-      nucleation,
       new Label("Recrystallization Step"),
       monteCarloRecStep,
       new Label("Recrystallization J_gb"),
