@@ -36,7 +36,7 @@ object MonteCarlo {
       i =>
         (0 until CA.cellsVertical).par.foreach {
           j =>
-            CA.addArrayCell(i, j, possibleStates(rand.nextInt(Omega)))
+            CA.caArray(i)(j) = possibleStates(rand.nextInt(Omega))
         }
     }
     CA.refreshCA
@@ -81,6 +81,7 @@ object MonteCarlo {
   }
 
   def runSimulation = {
+    val timeBeg = System.currentTimeMillis()
     (0 until steps).par.foreach {
       s =>
       // 1. choose random cell
@@ -131,23 +132,16 @@ object MonteCarlo {
           // 5. Compare and switch
 
           if (Egb_afterChange <= Egb) {
-            // Platform.runLater {
-            //CA.addCell(x, y, nextOrientation)
             CA.addArrayCell(x, y, nextOrientation)
-            //  }
           }
         }
     }
-
-    for (i <- 0 until CA.cellsHorizontal) {
-      for (j <- 0 until CA.cellsVertical) {
-        CA.gc.fill = ca(i)(j)
-        CA.gc.fillRect(i * CA.cellSize, j * CA.cellSize, CA.cellSize, CA.cellSize)
-      }
-    }
+    CA.refreshCA
+    System.out.println("Elapsed time: "+(System.currentTimeMillis() - timeBeg) + " ms")
   }
 
-  def runRecrystalization: Unit = {
+  // Old recrys. function
+  /*def runRecrystalization: Unit = {
 
     //create cells on boundaries seq
     if (currentRecStep == 0) {
@@ -262,10 +256,11 @@ object MonteCarlo {
     CA.refreshCA
     //     }
     //recrystalizedCells
-  }
+  }*/
 
 
   def runSRX: Unit = {
+    val timeBeg = System.currentTimeMillis()
 
     //create cells on boundaries seq
     if (currentRecStep == 0) {
@@ -366,6 +361,7 @@ object MonteCarlo {
         }
     }
     CA.refreshCA
+    System.out.println("Elapsed time: "+(System.currentTimeMillis()-timeBeg) + " ms")
   }
 
 
@@ -449,18 +445,16 @@ object MonteCarlo {
   }
 
   def heterogenousEnergyDist = {
-    H = Array.fill(CA.cellsHorizontal, CA.cellsVertical)(4)
+    H = Array.fill(CA.cellsHorizontal, CA.cellsVertical)(0)
     val currentBoundaries = for {i <- 0 until CA.cellsHorizontal
                                  j <- 0 until CA.cellsVertical
     } {
       val nbs = CA.getNb(i, j)
       if (nbs.exists(nb => CA.caArray(nb._1)(nb._2) != CA.caArray(i)(j))) {
-        H(i)(j) = 0
+        H(i)(j) = 4
         nbs.foreach(nb =>
-          H(nb._1)(nb._2) = 0)
+          H(nb._1)(nb._2) = 4)
       }
     }
   }
-
-
 }

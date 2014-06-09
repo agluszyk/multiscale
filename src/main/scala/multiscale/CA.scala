@@ -10,7 +10,7 @@ object CA {
   val rand = new Random()
   val imgHeight = 768
   val imgWidth = 1024
-  var cellSize = 4
+  var cellSize = 2
   var cellsHorizontal = imgWidth / cellSize
   var cellsVertical = imgHeight / cellSize
   var periodic = true
